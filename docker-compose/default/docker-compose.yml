@@ -1,0 +1,114 @@
+services:
+  rabbit:
+    image: "rabbitmq:4.0-management"
+    container_name: rabbitmq-ms
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+  postgresql:
+    image: bitnami/postgresql:15.4.0
+    container_name: postgresql-ms
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rocks
+    volumes:
+      - ./db_scripts/schemas:/opt/schemas
+      - ./db_scripts/db-init.sh:/docker-entrypoint-initdb.d/db-init.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
+  configserver:
+    image: "fbz-tec/configserver:s6"
+    container_name: configserver-ms
+    ports:
+      - "8071:8071"
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:///etc//config"
+    volumes:
+      - C:/Users/Lenovo/config:/etc/config
+    healthcheck:
+      test: "wget -qO- --tries=1 --timeout=5 http://localhost:8071/actuator/health/readiness | grep -q 'UP' || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
+
+  accounts:
+    image: "fbz-tec/accounts:s6"
+    container_name: accounts-ms
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_NAME: accounts
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/accountsdb"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configservice-config
+
+  loans:
+    image: "fbz-tec/loans:s6"
+    container_name: loans-ms
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_APPLICATION_NAME: loans
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/loansdb"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configservice-config
+
+  cards:
+    image: "fbz-tec/cards:s6"
+    container_name: cards-ms
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_APPLICATION_NAME: cards
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/cardsdb"
+    depends_on:
+      configserver:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configservice-config
+
+networks:
+  eazybank:
+    driver: "bridge"

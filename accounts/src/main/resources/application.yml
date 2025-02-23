@@ -1,0 +1,28 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: accounts
+  datasource:
+    url: jdbc:postgresql://localhost:5432/accountsdb
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: rocks
+  jpa:
+    show-sql: true
+    sql:
+      init:
+        mode: always
+  config:
+    import: "optional:configserver:http://localhost:8071/"
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

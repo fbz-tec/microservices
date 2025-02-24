@@ -96,7 +96,7 @@ services:
     image: "fbz-tec/cards:s6"
     container_name: cards-ms
     ports:
-      - "9000:9000"
+      - "8078:8078"
     environment:
       SPRING_APPLICATION_NAME: cards
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/cardsdb"

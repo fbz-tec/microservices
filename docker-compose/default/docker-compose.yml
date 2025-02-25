@@ -74,6 +74,30 @@ services:
       file: common-config.yml
       service: microservice-configservice-config
 
+  gatewayserver:
+    image: "fbz-tec/gatewayserver:s6"
+    container_name: gatewayserver-ms
+    ports:
+      - "8072:8072"
+    environment:
+      SPRING_APPLICATION_NAME: gatewayserver
+    healthcheck:
+      test: "wget -qO- --tries=1 --timeout=5 http://localhost:8072/actuator/health/readiness | grep -q 'UP' || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      accounts:
+        condition: service_healthy
+      cards:
+        condition: service_healthy
+      loans:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-eureka-config
+
   accounts:
     image: "fbz-tec/accounts:s6"
     container_name: accounts-ms
@@ -82,6 +106,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: accounts
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/accountsdb"
+    healthcheck:
+      test: "wget -qO- --tries=1 --timeout=5 http://localhost:8080/actuator/health/readiness | grep -q 'UP' || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy
@@ -99,6 +129,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: loans
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/loansdb"
+    healthcheck:
+      test: "wget -qO- --tries=1 --timeout=5 http://localhost:8090/actuator/health/readiness | grep -q 'UP' || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy
@@ -116,6 +152,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: cards
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/cardsdb"
+    healthcheck:
+      test: "wget -qO- --tries=1 --timeout=5 http://localhost:8078/actuator/health/readiness | grep -q 'UP' || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     depends_on:
       eurekaserver:
         condition: service_healthy

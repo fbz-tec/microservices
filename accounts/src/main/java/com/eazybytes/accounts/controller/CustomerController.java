@@ -63,8 +63,16 @@ public class CustomerController {
                                                                    String mobileNumber){
         logger.debug("EazyBank-correlation-id found: {}",correlationId);
         CustomerDto customerDto = iAccountsService.fetchAccount(mobileNumber);
-        CardsDto cardsDto = cardsFeignClient.fetchCardDetails(correlationId,mobileNumber).getBody();
-        LoansDto loansDto = loansFeignClient.fetchLoanDetails(correlationId,mobileNumber).getBody();
+        LoansDto loansDto=null;
+        CardsDto cardsDto=null;
+        ResponseEntity<CardsDto> cardsDtoResponseEntity= cardsFeignClient.fetchCardDetails(correlationId,mobileNumber);
+        if(null != cardsDtoResponseEntity){
+         cardsDto =  cardsDtoResponseEntity.getBody();
+        }
+        ResponseEntity<LoansDto> loansDtoResponseEntity = loansFeignClient.fetchLoanDetails(correlationId,mobileNumber);
+        if(null != loansDtoResponseEntity){
+            loansDto = loansDtoResponseEntity.getBody();
+        }
         CustomerDetailsDto customerDetailsDto =new CustomerDetailsDto();
         BeanUtils.copyProperties(customerDto,customerDetailsDto);
         customerDetailsDto.setCardsDto(cardsDto);

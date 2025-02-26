@@ -15,6 +15,11 @@ spring:
         mode: always
   config:
     import: "optional:configserver:http://localhost:8071/"
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
   rabbitmq:
     host: localhost
     port: 5672
@@ -37,7 +42,6 @@ management:
     health:
       probes:
         enabled: true
-
   info:
     env:
       enabled: true
@@ -62,3 +66,13 @@ logging:
     com:
       eazybytes:
         accounts: DEBUG
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 2
+        failure-rate-threshold: 50
+        wait-duration-in-open-state:
+          seconds: 10

@@ -76,3 +76,9 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state:
           seconds: 10
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 1
+        limit-refresh-period: 5000
+        timeout-duration: 1000

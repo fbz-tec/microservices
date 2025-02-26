@@ -19,7 +19,7 @@ version
 *.iws
 *.iml
 *.ipr
-!**/src/main/**/*.*~
+*.*~
 
 ### NetBeans ###
 /nbproject/private/

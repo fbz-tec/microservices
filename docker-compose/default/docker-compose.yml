@@ -1,4 +1,16 @@
 services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      timeout: 10s
+      retries: 10
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
   rabbit:
     image: "rabbitmq:4.0-management"
     container_name: rabbitmq-ms
@@ -81,6 +93,7 @@ services:
       - "8072:8072"
     environment:
       SPRING_APPLICATION_NAME: gatewayserver
+      SPRING_DATA_REDIS_HOST: "redis"
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8072/actuator/health/readiness | grep -q 'UP' || exit 1"
       interval: 10s
@@ -88,6 +101,10 @@ services:
       retries: 10
       start_period: 10s
     depends_on:
+      rabbit:
+          condition: service_healthy
+      redis:
+        condition: service_healthy
       accounts:
         condition: service_healthy
       cards:
@@ -113,6 +130,8 @@ services:
       retries: 10
       start_period: 10s
     depends_on:
+      rabbit:
+        condition: service_healthy
       eurekaserver:
         condition: service_healthy
       postgresql:
@@ -136,6 +155,8 @@ services:
       retries: 10
       start_period: 10s
     depends_on:
+      rabbit:
+        condition: service_healthy
       eurekaserver:
         condition: service_healthy
       postgresql:
@@ -159,6 +180,8 @@ services:
       retries: 10
       start_period: 10s
     depends_on:
+      rabbit:
+        condition: service_healthy
       eurekaserver:
         condition: service_healthy
       postgresql:

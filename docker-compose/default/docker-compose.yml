@@ -3,9 +3,9 @@ services:
     image: grafana/loki:3.4
     command: "-config.file=/etc/loki/config.yaml -target=read"
     ports:
-      - 3101:3100
-      - 7946
-      - 9095
+      - "3101:3100"
+      - "7946"
+      - "9095"
     volumes:
       - ../observability/loki/loki-config.yaml:/etc/loki/config.yaml
     depends_on:
@@ -24,9 +24,9 @@ services:
     image: grafana/loki:3.4
     command: "-config.file=/etc/loki/config.yaml -target=write"
     ports:
-      - 3102:3100
-      - 7946
-      - 9095
+      - "3102:3100"
+      - "7946"
+      - "9095"
     volumes:
       - ../observability/loki/loki-config.yaml:/etc/loki/config.yaml
     healthcheck:
@@ -46,7 +46,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     ports:
-      - 12345:12345
+      - "12345:12345"
     depends_on:
       - gateway
     extends:
@@ -82,7 +82,7 @@ services:
       - MINIO_PROMETHEUS_AUTH_TYPE=public
       - MINIO_UPDATE=off
     ports:
-      - 9000
+      - "9000"
     volumes:
       - ./.data/minio:/data
     healthcheck:
@@ -104,8 +104,23 @@ services:
       file: common-config.yml
       service: network-deploy-service
 
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: tempo
+    ports:
+      - "3110:3100"
+      - "4318:4318"
+    volumes:
+      - ../observability/tempo/tempo.yml:/etc/tempo-config.yaml
+    command:
+      - "-config.file=/etc/tempo-config.yaml"
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -223,13 +238,15 @@ services:
       - "8071:8071"
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8071/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-base-config
+    environment:
+      OTEL_SERVICE_NAME: configserver
 
   eurekaserver:
     image: "fbz-tec/eurekaserver:s11"
@@ -238,11 +255,12 @@ services:
       - "8070:8070"
     environment:
       SPRING_APPLICATION_NAME: eurekaserver
+      OTEL_SERVICE_NAME: configserver
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8070/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     depends_on:
       configserver:
@@ -259,11 +277,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: gatewayserver
       SPRING_DATA_REDIS_HOST: "redis"
+      OTEL_SERVICE_NAME: gatewayserver
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8072/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     depends_on:
       accounts:
@@ -284,11 +303,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: accounts
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/accountsdb"
+      OTEL_SERVICE_NAME: accounts
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8080/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     depends_on:
       eurekaserver:
@@ -307,11 +327,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: loans
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/loansdb"
+      OTEL_SERVICE_NAME: loans
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8090/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     depends_on:
       eurekaserver:
@@ -330,11 +351,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: cards
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/cardsdb"
+      OTEL_SERVICE_NAME: cards
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8078/actuator/health/readiness | grep -q 'UP' || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     depends_on:
       eurekaserver:

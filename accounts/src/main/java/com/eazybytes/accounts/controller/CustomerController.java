@@ -61,7 +61,7 @@ public class CustomerController {
                                                                    @RequestParam
                                                                    @Pattern(regexp="(^$|[0-9]{10})",message = "Mobile number must be 10 digits")
                                                                    String mobileNumber){
-        logger.debug("EazyBank-correlation-id found: {}",correlationId);
+        logger.debug("fetchCustomerDetails method start");
         CustomerDto customerDto = iAccountsService.fetchAccount(mobileNumber);
         LoansDto loansDto=null;
         CardsDto cardsDto=null;
@@ -77,6 +77,7 @@ public class CustomerController {
         BeanUtils.copyProperties(customerDto,customerDetailsDto);
         customerDetailsDto.setCardsDto(cardsDto);
         customerDetailsDto.setLoansDto(loansDto);
+        logger.debug("fetchCustomerDetails method end");
 
         return ResponseEntity.ok(customerDetailsDto);
     }

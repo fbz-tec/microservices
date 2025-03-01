@@ -1,0 +1,64 @@
+version: "3"
+
+vars:
+  SERVICES:
+    - configserver
+    - eurekaserver
+    - gatewayserver
+    - accounts
+    - cards
+    - loans
+
+tasks:
+  clean:
+    desc: "clean all services"
+    cmds:
+      - for: { var: SERVICES}
+        cmd: |
+             echo ""
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo "| Cleaning service {{.ITEM}}"
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo ""
+             cd {{.ITEM}} && mvn clean
+    silent: true
+
+  build:
+    desc: "build all services"
+    cmds:
+      - for: { var: SERVICES}
+        cmd: |
+          echo ""
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo "| Building service {{.ITEM}}"
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo ""
+             cd {{.ITEM}} && mvn package -DskipTests
+    silent: true
+
+  dockerBuild:
+    desc: "build docker images for all services"
+    cmds:
+      - for: { var: SERVICES }
+        cmd: |
+          echo ""
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo "| Building docker image for service {{.ITEM}}"
+             echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+             echo ""
+             cd {{.ITEM}} && mvn clean compile jib:dockerBuild
+    silent: true
+
+  up:
+    desc: "start docker compose"
+    cmds:
+      - echo "Start docker compose"
+      - cd docker-compose/default && docker-compose up -d
+    silent: true
+
+  down:
+    desc: "stop docker compose"
+    cmds:
+      - echo "Stop docker compose"
+      - cd docker-compose/default && docker-compose down -v
+    silent: true

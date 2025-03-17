@@ -230,9 +230,24 @@ services:
     extends:
       file: common-config.yml
       service: network-deploy-service
+  rabbit:
+    image: "rabbitmq:4.0-management"
+    container_name: rabbitmq-ms
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
 
   configserver:
-    image: "fbz-tec/configserver:s11"
+    image: "fbz-tec/configserver:s13"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -249,7 +264,7 @@ services:
       OTEL_SERVICE_NAME: configserver
 
   eurekaserver:
-    image: "fbz-tec/eurekaserver:s11"
+    image: "fbz-tec/eurekaserver:s13"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -270,7 +285,7 @@ services:
       service: microservice-configservice-config
 
   gatewayserver:
-    image: "fbz-tec/gatewayserver:s11"
+    image: "fbz-tec/gatewayserver:s13"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"
@@ -296,7 +311,7 @@ services:
       service: microservice-eureka-config
 
   accounts:
-    image: "fbz-tec/accounts:s11"
+    image: "fbz-tec/accounts:s13"
     container_name: accounts-ms
     ports:
       - "8080:8080"
@@ -304,6 +319,7 @@ services:
       SPRING_APPLICATION_NAME: accounts
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/accountsdb"
       OTEL_SERVICE_NAME: accounts
+      SPRING_RABBITMQ_HOST: rabbit
     healthcheck:
       test: "wget -qO- --tries=1 --timeout=5 http://localhost:8080/actuator/health/readiness | grep -q 'UP' || exit 1"
       interval: 20s
@@ -315,12 +331,14 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
+      rabbit:
+        condition: service_healthy
     extends:
       file: common-config.yml
       service: microservice-eureka-config
 
   loans:
-    image: "fbz-tec/loans:s11"
+    image: "fbz-tec/loans:s13"
     container_name: loans-ms
     ports:
       - "8090:8090"
@@ -344,7 +362,7 @@ services:
       service: microservice-eureka-config
 
   cards:
-    image: "fbz-tec/cards:s11"
+    image: "fbz-tec/cards:s13"
     container_name: cards-ms
     ports:
       - "8078:8078"
@@ -366,6 +384,20 @@ services:
     extends:
       file: common-config.yml
       service: microservice-eureka-config
+  message:
+    image: "fbz-tec/message:s13"
+    container_name: message-ms
+    ports:
+      - "9010:9010"
+    environment:
+      SPRING_APPLICATION_NAME: message
+      SPRING_RABBITMQ_HOST: rabbit
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
 
 networks:
   eazybank:

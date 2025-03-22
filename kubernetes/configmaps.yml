@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: eazybank-configmap
+data:
+    SPRING_PROFILES_ACTIVE: "default"
+    SPRING_CONFIG_IMPORT: "configserver:http://configserver:8071"
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka"
+    CONFIGSERVER_APPLICATION_NAME: "configserver"
+    EUREKA_APPLICATION_NAME: "eurekaserver"
+    ACCOUNTS_APPLICATION_NAME: "accounts"
+    LOANS_APPLICATION_NAME: "loans"
+    CARDS_APPLICATION_NAME: "cards"
+    MESSAGE_APPLICATION_NAME: "message"
+    GATEWAY_APPLICATION_NAME: "gatewayserver"
+    ACCOUNTS_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/accountsdb"
+    LOANS_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/loansdb"
+    CARDS_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/cardsdb"
+    SPRING_RABBITMQ_HOST: "rabbit"

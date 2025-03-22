@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: bitnami/postgresql:15.4.0
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: postgres-configmap
+        volumeMounts:
+          - name: schemas
+            mountPath: /opt/schemas
+          - name: init-script
+            mountPath: /docker-entrypoint-initdb.d/db-init.sh
+            subPath: db-init.sh
+      volumes:
+      - name: schemas
+        configMap:
+          name: postgresql-schemas
+      - name: init-script
+        configMap:
+          name: postgres-configmap
+          defaultMode: 0777
+      - name: data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: LoadBalancer
+  selector:
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432

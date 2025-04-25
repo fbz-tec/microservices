@@ -1,0 +1,32 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+deploymentName: cards-deployment
+serviceName: cards
+appLabel: cards
+appName: cards
+
+replicaCount: 1
+
+image:
+  repository: fbz-tec/cards
+  tag: s13
+
+containerPort: 8078
+
+service:
+  type: ClusterIP
+  port: 8078
+  targetPort: 8078
+
+dbUrlKey: CARDS_DATASOURCE_URL
+
+appname_enabled: true
+profile_enabled: true
+config_enabled: true
+eureka_enabled: true
+resouceserver_enabled: false
+otel_enabled: true
+kafka_enabled: false
+rabbitmq_enabled: false
+postgresdb_enabled: true

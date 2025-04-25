@@ -1,0 +1,15 @@
+global:
+  configMapName: eazybank-configmap
+  activeProfile: default
+  configServerURL: configserver:http://configserver:8071
+  eurekaServerURL: http://eurekaserver:8070/eureka
+  keyCloakURL: http://keycloak:8080/realms/eazybank
+  openTelemetryJavaAgent: "-javaagent:/app/libs/opentelemetry-javaagent-2.13.2.jar"
+  otelExporterEndPoint: http://tempo-grafana-tempo-distributor:4318
+  otelMetricsExporter: none
+  otelLogsExporter: none
+  kafkaBrokerURL: kafka-controller-0.kafka-controller.default.svc.cluster.local:9092
+  rabbitMQHost: rabbitmq.default.svc.cluster.local
+  accountsDataSourceUrl: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/accountsdb
+  loansDataSourceUrl: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/loansdb
+  cardsDataSourceUrl: jdbc:postgresql://postgres-postgresql.default.svc.cluster.local:5432/cardsdb

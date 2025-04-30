@@ -1,0 +1,32 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+deploymentName: loans-deployment
+serviceName: loans
+appLabel: loans
+appName: loans
+
+replicaCount: 1
+
+image:
+  repository: fbz-tec/loans
+  tag: s14
+
+containerPort: 8090
+
+service:
+  type: ClusterIP
+  port: 8090
+  targetPort: 8090
+
+dbUrlKey: LOANS_DATASOURCE_URL
+
+appname_enabled: true
+profile_enabled: true
+config_enabled: true
+discovery_enabled: true
+resouceserver_enabled: false
+otel_enabled: true
+kafka_enabled: false
+rabbitmq_enabled: false
+postgresdb_enabled: true

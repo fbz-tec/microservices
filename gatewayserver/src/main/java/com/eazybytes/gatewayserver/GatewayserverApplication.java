@@ -2,6 +2,7 @@ package com.eazybytes.gatewayserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -14,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @SpringBootApplication
+@EnableDiscoveryClient
 public class GatewayserverApplication {
 
 	public static void main(String[] args) {
@@ -32,7 +34,7 @@ public class GatewayserverApplication {
 								.circuitBreaker(config ->config
 										.setName("accountsCircuitBreaker")
 										.setFallbackUri("forward:/contactSupport")))
-						.uri("lb://ACCOUNTS"))
+						.uri("http://accounts:8080"))
 				.route(p -> p
 						.path("/eazybank/cards/**")
 						.filters(f -> f
@@ -43,7 +45,7 @@ public class GatewayserverApplication {
 										.setRetries(3)
 										.setMethods(HttpMethod.GET)
 										.setBackoff(Duration.ofMillis(100),Duration.ofMillis(1000),2,true)))
-						.uri("lb://CARDS"))
+						.uri("http://cards:8078"))
 				.route(p -> p
 						.path("/eazybank/loans/**")
 						.filters(f -> f
@@ -53,7 +55,7 @@ public class GatewayserverApplication {
 								.requestRateLimiter(config -> config
 										.setRateLimiter(redisRateLimiter())
 										.setKeyResolver(userKeyResolver())))
-						.uri("lb://LOANS")).build();
+						.uri("http://loans:8090")).build();
 	}
 
 	@Bean
